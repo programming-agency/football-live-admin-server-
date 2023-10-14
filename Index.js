@@ -26,39 +26,41 @@ app.get('/', (req, res) => {
     res.send('Hello, Football Live!');
 });
 
+const itemSchema = new mongoose.Schema({
+    name: String,
+});
+
+const Item = mongoose.model('Item', itemSchema);
 
 // Post method
-app.post('/api/items', (req, res) => {
-
-    const Item = mongoose.model('Item', { name: String });
-
-    const newItem = new Item({ name: req.body.name });
-
-    newItem.save((err) => {
-        if (err) {
-            console.error(err);
-            res.status(500).send('Error saving item');
-        } else {
-            res.status(201).send('Item saved');
-        }
-    });
+app.post('/api/items', async (req, res) => {
+    try {
+        const newItem = new Item({ name: req.body.name });
+        await newItem.save();
+        res.status(201).send('Item saved to MongoDB');
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Error saving item to MongoDB');
+    }
 });
-
 
 // Get method
-app.get('/api/items', (req, res) => {
-
-    const Item = mongoose.model('Item', { name: String });
-
-    Item.find({}, (err, items) => {
-        if (err) {
-            console.error(err);
-            res.status(500).send('Error fetching items');
-        } else {
-            res.json(items);
-        }
-    });
+app.get('/api/items', async (req, res) => {
+    try {
+        const items = await Item.find({});
+        res.json(items);
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Error fetching items from MongoDB');
+    }
 });
+
+
+
+
+
+
+
 
 // Start the server
 app.listen(port, () => {
